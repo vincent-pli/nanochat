@@ -59,7 +59,7 @@ user_config = {k: globals()[k] for k in config_keys} # will be useful for loggin
 # Compute init
 ddp, ddp_rank, ddp_local_rank, ddp_world_size, device = compute_init()
 master_process = ddp_rank == 0 # this process will do logging, checkpointing etc.
-autocast_ctx = torch.amp.autocast(device_type="cuda", dtype=torch.bfloat16)
+autocast_ctx = torch.amp.autocast(device_type="cuda", dtype=torch.float16)
 
 # wandb logging init
 use_dummy_wandb = run == "dummy" or not master_process
@@ -286,7 +286,7 @@ for step in range(num_iterations + 1):
     pct_done = 100 * step / num_iterations
     tok_per_sec = int(world_tokens_per_fwdbwd / dt)
     flops_per_sec = num_flops_per_token * total_batch_size / dt
-    promised_flops_per_sec_h100 = 989e12 * ddp_world_size # bfloat16 H100 SXM and without 2:4 sparsity
+    promised_flops_per_sec_h100 = 989e12 * ddp_world_size # float16 H100 SXM and without 2:4 sparsity
     mfu = 100 * flops_per_sec / promised_flops_per_sec_h100 # in %
     if step > 10:
         total_training_time += dt # only count the time after the first 10 steps
